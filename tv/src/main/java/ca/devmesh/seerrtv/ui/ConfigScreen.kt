@@ -25,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -2435,6 +2436,8 @@ private fun CommonTextField(
             focusedLabelColor = if (isError) Color.Red else Color(0xFFBB86FC),
             unfocusedLabelColor = if (isError) Color.Red.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.7f)
         ),
+        // Una sola línea: en un campo multilínea ▲/▼ mueven el cursor y el foco no puede salir hacia el botón
+        singleLine = true,
         keyboardOptions = keyboardOptions,
         keyboardActions = actualKeyboardActions,
         modifier = modifier
@@ -2445,6 +2448,15 @@ private fun CommonTextField(
                 shape = RoundedCornerShape(8.dp)
             )
             .onFocusChanged { isFocused = it.isFocused }
+            // ▼ siempre sale del campo hacia el elemento de debajo (p. ej. el botón); si no, el campo se queda con la tecla
+            .onPreviewKeyEvent { event ->
+                if (event.key == Key.DirectionDown && event.type == KeyEventType.KeyDown) {
+                    focusManager.moveFocus(FocusDirection.Down)
+                    true
+                } else {
+                    false
+                }
+            }
     )
 }
 
